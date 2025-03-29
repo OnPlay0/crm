@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Jonisql112233
+      MYSQL_DATABASE: gestorusuarios
+    ports:
+      - "3307:3306"
+    networks:
+      - crm_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+  servicio-users:
+    build:
+      context: ./users
+      dockerfile: Dockerfile
+    container_name: servicio-users
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Jonisql112233
+    networks:
+      - crm_network
+
+
+  servicio-leads:
+    build:
+      context: ./leads
+      dockerfile: Dockerfile
+    container_name: servicio-leads
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Jonisql112233
+    networks:
+      - crm_network
+
+  servicio-clientes:
+    build:
+      context: ./cliente
+      dockerfile: Dockerfile
+    container_name: servicio-clientes
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Jonisql112233
+    networks:
+      - crm_network
+
+  servicio-ventas:
+    build:
+      context: ./ventas
+      dockerfile: Dockerfile
+    container_name: servicio-ventas
+    ports:
+      - "8084:8084"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Jonisql112233
+    networks:
+      - crm_network
+
+  servicio-microservicios:
+    build:
+      context: ./microservicios
+      dockerfile: Dockerfile
+    container_name: servicio-microservicios
+    ports:
+      - "8085:8085"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Jonisql112233
+    networks:
+      - crm_network
+
+  api-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - servicio-clientes
+      - servicio-leads
+      - servicio-ventas
+      - servicio-microservicios
+      - servicio-users
+    networks:
+      - crm_network
+
+networks:
+  crm_network:
+    driver: bridge

@@ -1,0 +1,42 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: microservicio-users
+          uri: http://servicio-users:8081
+          predicates:
+            - Path=/api/users/**
+        - id: microservicio-leads
+          uri: http://servicio-leads:8082
+          predicates:
+            - Path=/api/leads/**
+        - id: microservicio-clientes
+          uri: http://servicio-clientes:8083
+          predicates:
+            - Path=/api/clientes/**
+        - id: microservicio-ventas
+          uri: http://servicio-ventas:8084
+          predicates:
+            - Path=/api/oportunidades/**
+        - id: microservicio-servicios
+          uri: http://servicio-microservicios:8085
+          predicates:
+            - Path=/api/servicios/**
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      show-details: always
