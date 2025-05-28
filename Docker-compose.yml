@@ -32,9 +32,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Jonisql112233
+      JWT_SECRET: eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
+      JWT_EXPIRATION: 86400000
     networks:
       - crm_network
-
 
   servicio-leads:
     build:
@@ -50,6 +51,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Jonisql112233
+      JWT_SECRET: eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
+      JWT_EXPIRATION: 86400000
     networks:
       - crm_network
 
@@ -67,6 +70,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Jonisql112233
+      JWT_SECRET: eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
+      JWT_EXPIRATION: 86400000
     networks:
       - crm_network
 
@@ -84,6 +89,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Jonisql112233
+      JWT_SECRET: eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
+      JWT_EXPIRATION: 86400000
     networks:
       - crm_network
 
@@ -101,6 +108,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Jonisql112233
+      JWT_SECRET: eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
+      JWT_EXPIRATION: 86400000
     networks:
       - crm_network
 
@@ -117,6 +126,13 @@ services:
       - servicio-ventas
       - servicio-microservicios
       - servicio-users
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestorusuarios
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Jonisql112233
+      JWT_SECRET: eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
+      JWT_EXPIRATION: 86400000
+      SPRING_CLOUD_GATEWAY_FORWARDED_HEADERS_ENABLED: "true"
     networks:
       - crm_network
 

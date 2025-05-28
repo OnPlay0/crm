@@ -1,12 +1,13 @@
 package com.gestor.users.dto;
 
+import com.gestor.users.model.RoleList;
 import lombok.Data;
-
-// actualizar datos
 
 @Data
 public class UserUpdateDTO {
-    private String username; // Opcional en la actualización
-    private String email; // Opcional en la actualización
-    private String role; // Opcional en la actualización
+
+    private String username;
+    private String email;
+    private String password;
+    private RoleList role;
 }

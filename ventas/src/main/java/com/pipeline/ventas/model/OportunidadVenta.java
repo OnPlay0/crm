@@ -4,17 +4,21 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "oportunidades_venta")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 @Builder
-public class OportunidadVenta { // Cambio de "VentaOportunidad" a "OportunidadVenta"
+public class OportunidadVenta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     private String cliente;
     private String descripcion;
@@ -23,6 +27,12 @@ public class OportunidadVenta { // Cambio de "VentaOportunidad" a "OportunidadVe
     @Enumerated(EnumType.STRING)
     private EstadoOportunidad estado;
 
-    private LocalDate fechaCreacion;
     private LocalDate fechaCierreEstimada;
+
+    private LocalDateTime fechaRegistro;
+
+    @PrePersist
+    public void prePersist() {
+        this.fechaRegistro = LocalDateTime.now();
+    }
 }

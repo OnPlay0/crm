@@ -1,14 +1,15 @@
 package com.gestor.users.dto;
 
+import com.gestor.users.model.RoleList;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-// crear datos
-
 @Data
 public class UserCreateDTO {
+
     @NotBlank(message = "El nombre es obligatorio")
     @Size(min = 2, max = 50, message = "El nombre debe tener entre 2 y 50 caracteres")
     private String username;
@@ -21,6 +22,6 @@ public class UserCreateDTO {
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
     private String password;
 
-    @NotBlank(message = "El rol es obligatorio")
-    private String role;
+    @NotNull(message = "El rol es obligatorio")
+    private RoleList role; // Se manda como STRING (ej: "ROLE_USER")
 }

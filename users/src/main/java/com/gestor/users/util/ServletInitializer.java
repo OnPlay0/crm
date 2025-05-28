@@ -1,5 +1,6 @@
-package com.gestor.users;
+package com.gestor.users.util;
 
+import com.gestor.users.UsersApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 

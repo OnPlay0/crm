@@ -1,6 +1,7 @@
 package com.gestor.users.dto;
 
 
+import com.gestor.users.model.RoleList;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ public class UserDTO {
     private Long id;
     private String username;
     private String email;
-    private String role;
+    private RoleList role;
     private LocalDateTime createdAt; // Si incluyes fechas
     private LocalDateTime updatedAt; // Si incluyes fechas
 

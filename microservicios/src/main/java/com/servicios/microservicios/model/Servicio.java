@@ -14,6 +14,10 @@ public class Servicio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+
     private String nombre;
     private String descripcion;
     private Double precio;

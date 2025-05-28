@@ -1,5 +1,6 @@
 package com.micro.leads.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.micro.leads.model.EstadoLead;
 import com.micro.leads.model.FuenteLead;
 import jakarta.validation.constraints.Email;
@@ -15,6 +16,10 @@ import java.time.LocalDate;
 public class LeadDTO {
 
     private Long id;
+
+    @JsonIgnore
+    private Long userId;
+
 
     @NotBlank
     private String nombre;

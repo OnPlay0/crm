@@ -2,41 +2,68 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: api-gateway
+
   cloud:
     gateway:
+      forwarded:
+        headers:
+          enabled: true
+
       routes:
-        - id: microservicio-users
+        - id: auth-route
+          uri: http://servicio-users:8081
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - PreserveHostHeader
+
+        - id: users-route
           uri: http://servicio-users:8081
           predicates:
             - Path=/api/users/**
+          filters:
+            - PreserveHostHeader
+
         - id: microservicio-leads
           uri: http://servicio-leads:8082
           predicates:
             - Path=/api/leads/**
+          filters:
+            - PreserveHostHeader
+
         - id: microservicio-clientes
           uri: http://servicio-clientes:8083
           predicates:
             - Path=/api/clientes/**
+          filters:
+            - PreserveHostHeader
+
         - id: microservicio-ventas
           uri: http://servicio-ventas:8084
           predicates:
             - Path=/api/oportunidades/**
+          filters:
+            - PreserveHostHeader
+
         - id: microservicio-servicios
           uri: http://servicio-microservicios:8085
           predicates:
             - Path=/api/servicios/**
+          filters:
+            - PreserveHostHeader
 
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
+jwt:
+  secret: eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
 
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
-  endpoint:
-    gateway:
-      enabled: true
-    health:
-      show-details: always
+        include: health,info # ✅ Para monitoreo básico. Evita `*` si no usás otros endpoints.
+
+logging:
+  level:
+    root: INFO
+    com.api.gateway.jwt.JwtAuthenticationFilter: WARN

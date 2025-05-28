@@ -1,14 +1,14 @@
-# Usar la imagen oficial de OpenJDK 17
 FROM openjdk:17-jdk-slim
 
-# Establecer el directorio de trabajo en el contenedor
 WORKDIR /app
 
-# Copiar el archivo JAR de la aplicación al contenedor
+# Copiar el .jar
 COPY target/users-0.0.1-SNAPSHOT.jar app.jar
 
-# Exponer el puerto en el que corre la aplicación
+# Copiar el application.yml que ya viene dentro del jar (Spring lo encuentra solo)
+# No copiarlo manualmente
+
 EXPOSE 8081
 
-# Comando para ejecutar la aplicación
+# Ejecutar normalmente, sin forzar config.location
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class PasswordUpdateDTO {
+
     @NotBlank
     @Size(min = 8)
     private String password;
