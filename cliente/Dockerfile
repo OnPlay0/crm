@@ -9,4 +9,5 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=build /app/target/cliente-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
+ENV SPRING_CONFIG_IMPORT=optional:configtree:/app/config/
 ENTRYPOINT ["java", "-jar", "app.jar"]
