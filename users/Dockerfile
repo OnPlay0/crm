@@ -1,14 +1,12 @@
-FROM openjdk:17-jdk-slim
-
+# Etapa 1: Construcción del JAR
+FROM maven:3.9.4-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copiar el .jar
-COPY target/users-0.0.1-SNAPSHOT.jar app.jar
-
-# Copiar el application.yml que ya viene dentro del jar (Spring lo encuentra solo)
-# No copiarlo manualmente
-
+# Etapa 2: Imagen liviana para ejecución
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=build /app/target/users-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8081
-
-# Ejecutar normalmente, sin forzar config.location
 ENTRYPOINT ["java", "-jar", "app.jar"]
