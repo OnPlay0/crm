@@ -10,4 +10,4 @@ WORKDIR /app
 COPY --from=build /app/target/cliente-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 ENV SPRING_CONFIG_IMPORT=optional:configtree:/app/config/
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dspring.datasource.url=$DB_URL -Dspring.datasource.username=$DB_USER -Dspring.datasource.password=$DB_PASSWORD -Djwt.secret=$JWT_SECRET -Dserver.port=$PORT -jar app.jar"]
