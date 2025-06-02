@@ -16,22 +16,16 @@ spring:
           uri: https://users-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/auth/**
-          filters:
-            - PreserveHostHeader
 
         - id: users-route
           uri: https://users-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/users/**
-          filters:
-            - PreserveHostHeader
 
         - id: microservicio-clientes
           uri: https://cliente-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/clientes/**
-          filters:
-            - PreserveHostHeader
 
 
         - id: microservicio-leads
