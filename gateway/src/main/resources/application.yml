@@ -13,30 +13,31 @@ spring:
 
       routes:
         - id: auth-route
-          uri: http://servicio-users:8081
+          uri: https://users-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/auth/**
           filters:
             - PreserveHostHeader
 
         - id: users-route
-          uri: http://servicio-users:8081
+          uri: https://users-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/users/**
           filters:
             - PreserveHostHeader
 
+        - id: microservicio-clientes
+          uri: https://cliente-services-976321280197.us-central1.run.app
+          predicates:
+            - Path=/api/clientes/**
+          filters:
+            - PreserveHostHeader
+
+
         - id: microservicio-leads
           uri: http://servicio-leads:8082
           predicates:
             - Path=/api/leads/**
-          filters:
-            - PreserveHostHeader
-
-        - id: microservicio-clientes
-          uri: http://servicio-clientes:8083
-          predicates:
-            - Path=/api/clientes/**
           filters:
             - PreserveHostHeader
 
@@ -61,7 +62,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info # ✅ Para monitoreo básico. Evita `*` si no usás otros endpoints.
+        include: health,info
 
 logging:
   level:
