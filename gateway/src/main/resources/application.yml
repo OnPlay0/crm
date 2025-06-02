@@ -67,4 +67,7 @@ management:
 logging:
   level:
     root: INFO
-    com.api.gateway.jwt.JwtAuthenticationFilter: WARN
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG
+    com.api.gateway.jwt.JwtAuthenticationFilter: DEBUG
+

@@ -29,7 +29,6 @@ public class SecurityConfig {
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/api/auth/login", "/actuator/**").permitAll()
 
-
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .pathMatchers("/api/users/**").hasRole("ADMIN")
