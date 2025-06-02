@@ -21,9 +21,6 @@ public class JwtUtils {
     @Value("${jwt.secret}")
     private String privateKey;
 
-    @Value("${jwt.user.generator}")
-    private String userGenerator;
-
     @Value("${jwt.expiration}")
     private int jwtExpiration;
 
@@ -40,7 +37,6 @@ public class JwtUtils {
 
         return Jwts.builder()
                 .setSubject(user.getUsername())
-                .setIssuer(userGenerator)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
                 .claim("username", user.getUsername())
