@@ -23,6 +23,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
 
+        log.info("📥 Filtro JWT activado para path: {}", path);
+
+
         if (path.startsWith("/api/auth/") || path.startsWith("/actuator/")) {
             return chain.filter(exchange);
         }
