@@ -93,7 +93,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
-    </dependencies>
+
+		<dependency>
+			<groupId>com.google.cloud.sql</groupId>
+			<artifactId>mysql-socket-factory</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+
+		
+	</dependencies>
+
 
 	<build>
 		<finalName>microservicios</finalName>
