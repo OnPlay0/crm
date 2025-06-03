@@ -7,7 +7,7 @@ RUN mvn clean package -DskipTests
 # Etapa 2: Imagen liviana para ejecución
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY --from=build /app/target/leads-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/leads.jar app.jar
 
 
 
