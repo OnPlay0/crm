@@ -25,7 +25,6 @@ public class SecurityConfig {
     ) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .securityContextRepository(securityContextRepository)
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/api/auth/login", "/actuator/**").permitAll()
 
@@ -48,10 +47,11 @@ public class SecurityConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of(
+        config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "https://crm-dashboard00.vercel.app" // 👈 Agregá esta línea
+                "https://crm-dashboard00.vercel.app"
         ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "X-User-Id", "X-Role", "X-Empresa-Id"));
