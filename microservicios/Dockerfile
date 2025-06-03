@@ -7,6 +7,6 @@ RUN mvn clean package -DskipTests
 # Etapa 2: Imagen final liviana
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY --from=build /app/target/microservicios-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 8085
+COPY --from=build /app/target/microservicios.jar app.jar
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
