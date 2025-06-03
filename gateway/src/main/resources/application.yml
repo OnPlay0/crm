@@ -27,30 +27,23 @@ spring:
           predicates:
             - Path=/api/clientes/**
 
-
         - id: microservicio-leads
-          uri: http://servicio-leads:8082
+          uri: https://leads-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/leads/**
-          filters:
-            - PreserveHostHeader
 
         - id: microservicio-ventas
-          uri: http://servicio-ventas:8084
+          uri: https://ventas-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/oportunidades/**
-          filters:
-            - PreserveHostHeader
 
         - id: microservicio-servicios
-          uri: http://servicio-microservicios:8085
+          uri: https://microservicios-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/servicios/**
-          filters:
-            - PreserveHostHeader
 
 jwt:
-  secret: eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
+  secret: ${JWT_SECRET}
 
 management:
   endpoints:
@@ -64,4 +57,3 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     reactor.netty.http.client: DEBUG
     com.api.gateway.jwt.JwtAuthenticationFilter: DEBUG
-
