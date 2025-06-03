@@ -9,25 +9,16 @@
         <outputRelativeToContentRoot value="true" />
         <module name="gateway" />
       </profile>
-      <profile name="Annotation profile for cliente" enabled="true">
+      <profile name="Annotation profile for microservicios" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="cliente" />
         <module name="ventas" />
         <module name="microservicios" />
-      </profile>
-      <profile name="Annotation profile for leads" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
-        </processorPath>
         <module name="leads" />
         <module name="users" />
       </profile>
