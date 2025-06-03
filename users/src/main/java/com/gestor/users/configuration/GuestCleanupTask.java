@@ -27,12 +27,11 @@ public class GuestCleanupTask {
 
 
     private final String[] microservicios = {
-            "http://servicio-leads:8082/api/leads/cleanup",
-            "http://servicio-clientes:8083/api/clientes/cleanup",
-            "http://servicio-ventas:8084/api/oportunidades/cleanup",
-            "http://servicio-microservicios:8085/api/servicios/cleanup"
+            "https://leads-services-976321280197.us-central1.run.app/api/leads/cleanup",
+            "https://cliente-services-976321280197.us-central1.run.app/api/clientes/cleanup",
+            "https://ventas-services-976321280197.us-central1.run.app/api/oportunidades/cleanup",
+            "https://microservicios-services-976321280197.us-central1.run.app/api/servicios/cleanup"
     };
-
 
     @Scheduled(fixedRate = 2 * 60 * 1000) // cada 2 minutos
     public void limpiarDatosDelInvitado() {
