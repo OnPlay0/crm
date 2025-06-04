@@ -47,6 +47,7 @@ public class SecurityConfig {
 
     @Bean
     public CorsWebFilter corsWebFilter() {
+        System.out.println("🟢 corsWebFilter ejecutado en Gateway");
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
                 "https://crm-dashboard00.vercel.app"
