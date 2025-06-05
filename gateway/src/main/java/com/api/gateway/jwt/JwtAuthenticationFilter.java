@@ -30,6 +30,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     @PostConstruct
     public void init() {
+        System.out.println("🛡️ JwtAuthenticationFilter INITIALIZADO");
         byte[] decodedSecret = Base64.getDecoder().decode(secret);
         this.secretKey = Keys.hmacShaKeyFor(decodedSecret);
     }
