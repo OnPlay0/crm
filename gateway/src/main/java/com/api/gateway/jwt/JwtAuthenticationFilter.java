@@ -20,18 +20,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
+        String method = exchange.getRequest().getMethod().name();
 
-        if (exchange.getRequest().getMethod().name().equalsIgnoreCase("OPTIONS")) {
-            exchange.getResponse().setStatusCode(HttpStatus.OK);
-            return exchange.getResponse().setComplete();
-        }
+        System.out.println("🛡️ Filtro JWT | PATH: " + path + " | METHOD: " + method);
 
-        // No validar rutas públicas
-        if (path.startsWith("/api/auth/") || path.startsWith("/actuator/")) {
+        if (method.equalsIgnoreCase("OPTIONS") ||
+                path.contains("/auth/login") ||
+                path.contains("/auth/signup") ||
+                path.contains("/actuator")) {
             return chain.filter(exchange);
         }
 
-        // Obtener token
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -39,18 +38,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         String token = authHeader.substring(7);
+
         try {
             if (!jwtUtil.validateToken(token) || jwtUtil.isTokenExpired(token)) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
 
-            // Extraer claims mínimos necesarios
             String userId = jwtUtil.getUserId(token);
             String username = jwtUtil.getUsername(token);
             String role = jwtUtil.getRole(token);
 
-            // Mutar request y reenviar
             ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                     .header("X-User-Id", userId)
                     .header("X-Username", username)
@@ -64,6 +62,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().setComplete();
         }
     }
+
 
     @Override
     public int getOrder() {
