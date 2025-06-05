@@ -1,7 +1,5 @@
 package com.api.gateway.security;
 
-import com.api.gateway.jwt.JwtSecurityContextRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,39 +17,28 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(
-            ServerHttpSecurity http,
-            JwtSecurityContextRepository securityContextRepository
-    ) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
-                .securityContextRepository(securityContextRepository)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/api/auth/login", "/actuator/**").permitAll()
-
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
                         .pathMatchers("/api/users/**").hasRole("ADMIN")
                         .pathMatchers("/api/leads/**").hasAnyRole("USER", "ADMIN", "INVITED")
                         .pathMatchers(HttpMethod.POST, "/api/clientes/upload").hasAnyRole("ADMIN", "USER", "INVITED")
                         .pathMatchers("/api/clientes/**").hasAnyRole("USER", "ADMIN", "INVITED")
                         .pathMatchers("/api/oportunidades/**").hasAnyRole("USER", "ADMIN", "INVITED")
                         .pathMatchers("/api/servicios/**").hasAnyRole("USER", "ADMIN", "INVITED")
-
                         .anyExchange().authenticated()
                 )
-
                 .build();
     }
-
 
     @Bean
     public CorsWebFilter corsWebFilter() {
         System.out.println("🟢 corsWebFilter ejecutado en Gateway");
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "https://crm-dashboard00.vercel.app"
-        ));
+        config.setAllowedOrigins(List.of("https://crm-dashboard00.vercel.app"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "X-User-Id", "X-Role"));
@@ -59,13 +46,10 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        source.registerCorsConfiguration("/api/**", config); // General para microservicios
-        source.registerCorsConfiguration("/api/auth/**", config); // Login y register
-        source.registerCorsConfiguration("/api/auth/login", config); // POST exacto
-
+        source.registerCorsConfiguration("/api/**", config);
+        source.registerCorsConfiguration("/api/auth/**", config);
+        source.registerCorsConfiguration("/api/auth/login", config);
 
         return new CorsWebFilter(source);
     }
-
-
 }

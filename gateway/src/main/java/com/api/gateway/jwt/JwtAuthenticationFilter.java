@@ -1,6 +1,9 @@
 package com.api.gateway.jwt;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import io.jsonwebtoken.Claims;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -11,18 +14,30 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import javax.crypto.SecretKey;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.util.Base64;
+
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    @Value("${jwt.secret}")
+    private String secret;
+
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init() {
+        byte[] decodedSecret = Base64.getDecoder().decode(secret);
+        this.secretKey = Keys.hmacShaKeyFor(decodedSecret);
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
         String method = exchange.getRequest().getMethod().name();
-
-        System.out.println("🛡️ Filtro JWT | PATH: " + path + " | METHOD: " + method);
 
         if (method.equalsIgnoreCase("OPTIONS") ||
                 path.contains("/auth/login") ||
@@ -37,17 +52,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().setComplete();
         }
 
-        String token = authHeader.substring(7);
-
         try {
-            if (!jwtUtil.validateToken(token) || jwtUtil.isTokenExpired(token)) {
-                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                return exchange.getResponse().setComplete();
-            }
+            String token = authHeader.substring(7);
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
 
-            String userId = jwtUtil.getUserId(token);
-            String username = jwtUtil.getUsername(token);
-            String role = jwtUtil.getRole(token);
+            String userId = String.valueOf(claims.get("userId"));
+            String username = String.valueOf(claims.get("username"));
+            String role = String.valueOf(claims.get("role"));
 
             ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                     .header("X-User-Id", userId)
@@ -62,7 +77,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().setComplete();
         }
     }
-
 
     @Override
     public int getOrder() {
