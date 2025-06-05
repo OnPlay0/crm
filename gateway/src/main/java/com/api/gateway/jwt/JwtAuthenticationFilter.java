@@ -40,11 +40,15 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String method = exchange.getRequest().getMethod().name();
 
         if (method.equalsIgnoreCase("OPTIONS") ||
-                path.contains("/api/auth/login") ||
-                path.contains("/api/auth/signup") ||
-                path.contains("/actuator")) {
+                path.startsWith("/auth/login") ||
+                path.startsWith("/auth/signup") ||
+                path.startsWith("/actuator")) {
+
+            System.out.println("🔓 Ruta pública: " + path + " - NO se valida JWT");
             return chain.filter(exchange);
         }
+
+
 
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
