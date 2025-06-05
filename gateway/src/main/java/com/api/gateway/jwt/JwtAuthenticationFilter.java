@@ -37,21 +37,21 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String path = exchange.getRequest().getPath().toString();
+        String path = exchange.getRequest().getPath().value(); // 🔥 Usa .value() en lugar de toString()
         String method = exchange.getRequest().getMethod().name();
-        System.out.println("📥 PATH DETECTADO: " + path);
-        if (
-                method.equalsIgnoreCase("OPTIONS") ||
-                        path.startsWith("/api/auth/login") ||
-                        path.startsWith("/api/auth/signup") ||
-                        path.startsWith("/api/actuator")) {
 
+        System.out.println("📥 PATH DETECTADO: " + path); // Esto te dirá si realmente llega /api/api/auth/login
+
+        // 🔓 Verificamos si la ruta es pública
+        if (method.equalsIgnoreCase("OPTIONS") ||
+                path.contains("/auth/login") ||
+                path.contains("/auth/signup") ||
+                path.contains("/actuator")) {
             System.out.println("🔓 Ruta pública: " + path + " - NO se valida JWT");
             return chain.filter(exchange);
         }
 
-
-
+        // 🔒 Rutas protegidas
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -83,6 +83,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().setComplete();
         }
     }
+
 
     @Override
     public int getOrder() {
