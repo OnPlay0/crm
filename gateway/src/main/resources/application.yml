@@ -5,9 +5,6 @@ spring:
   application:
     name: api-gateway
 
-  webflux:
-    base-path: /api
-
   cloud:
     gateway:
       forwarded:
@@ -22,6 +19,8 @@ spring:
           uri: https://users-services-976321280197.us-central1.run.app
           predicates:
             - Path=/api/auth/**
+          filters:
+            - StripPrefix=2
 
         - id: users-route
           uri: https://users-services-976321280197.us-central1.run.app

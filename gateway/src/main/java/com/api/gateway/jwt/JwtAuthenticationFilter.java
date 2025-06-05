@@ -42,14 +42,14 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
         System.out.println("📥 PATH DETECTADO: " + path); // Esto te dirá si realmente llega /api/api/auth/login
 
-        // 🔓 Verificamos si la ruta es pública
         if (method.equalsIgnoreCase("OPTIONS") ||
-                path.contains("/auth/login") ||
-                path.contains("/auth/signup") ||
-                path.contains("/actuator")) {
-            System.out.println("🔓 Ruta pública: " + path + " - NO se valida JWT");
+                path.equals("/api/auth/login") ||
+                path.equals("/api/auth/signup") ||
+                path.startsWith("/actuator")) {
+            System.out.println("🔓 Ruta pública detectada: " + path);
             return chain.filter(exchange);
         }
+
 
         // 🔒 Rutas protegidas
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
