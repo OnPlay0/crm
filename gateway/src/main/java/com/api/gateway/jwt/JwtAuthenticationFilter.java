@@ -38,11 +38,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
         String method = exchange.getRequest().getMethod().name();
-
-        if (method.equalsIgnoreCase("OPTIONS") ||
-                path.startsWith("/auth/login") ||
-                path.startsWith("/auth/signup") ||
-                path.startsWith("/actuator")) {
+        System.out.println("📥 PATH DETECTADO: " + path);
+        if (
+                method.equalsIgnoreCase("OPTIONS") ||
+                        path.startsWith("/api/auth/login") ||
+                        path.startsWith("/api/auth/signup") ||
+                        path.startsWith("/api/actuator")) {
 
             System.out.println("🔓 Ruta pública: " + path + " - NO se valida JWT");
             return chain.filter(exchange);
