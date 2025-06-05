@@ -40,8 +40,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String method = exchange.getRequest().getMethod().name();
 
         if (method.equalsIgnoreCase("OPTIONS") ||
-                path.contains("/auth/login") ||
-                path.contains("/auth/signup") ||
+                path.contains("/api/auth/login") ||
+                path.contains("/api/auth/signup") ||
                 path.contains("/actuator")) {
             return chain.filter(exchange);
         }
