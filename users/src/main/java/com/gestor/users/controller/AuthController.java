@@ -35,25 +35,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginUserDTO request) {
-        User authenticatedUser = authService.authenticate(request);
-        String jwtToken = jwtUtils.createToken(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        authenticatedUser, null, authenticatedUser.getAuthorities()
-                )
-        ); // 👈 usamos JwtUtils para generar el token
-
-        AuthResponseDTO response = new AuthResponseDTO(
-                jwtToken,
-                jwtToken, // (por ahora usás el mismo como refresh, después podés separarlos)
-                authenticatedUser.getRole().getName().name()
-        );
-
+        AuthResponseDTO response = authService.authenticate(request);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<AuthResponseDTO> refresh(@RequestHeader("Authorization") String authHeader) {
-        AuthResponseDTO newTokens = authService.refreshToken(authHeader);
-        return ResponseEntity.ok(newTokens);
-    }
+
 }
