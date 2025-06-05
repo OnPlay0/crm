@@ -6,6 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,12 +25,15 @@ public class JwtUtils {
     @Value("${jwt.expiration}")
     private int jwtExpiration;
 
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(privateKey));
+    }
 
     public String createToken(Authentication authentication) {
-        UserDetails mainUser = (UserDetails) authentication.getPrincipal();
-        SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(privateKey));
-
-        User user = (User) mainUser;
+        User user = (User) authentication.getPrincipal();
 
         int expiration = user.getUsername().equalsIgnoreCase("invitado")
                 ? 300
@@ -42,40 +46,25 @@ public class JwtUtils {
                 .claim("username", user.getUsername())
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().getName().name())
-                .signWith(key)
+                .signWith(secretKey)
                 .compact();
     }
 
-
-
-
-    public Boolean validateToken (String token, UserDetails userDetails){
-        final String userName=extractUserName(token);
-        return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
-    }
-
-
-    public Boolean isTokenExpired (String token) {
-            return extractExpiration(token).before(new Date());
-    }
-
-
-
     public Claims extractAllClaims(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(privateKey));
-
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
     }
 
-
-    public Date extractExpiration(String token) {
-        return extractAllClaims(token).getExpiration();
+    public boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
     }
-
 
     public String extractUserName(String token) {
         return extractAllClaims(token).getSubject();
     }
 
-
+    public boolean validateToken(String token, UserDetails userDetails) {
+        final String userName = extractUserName(token);
+        return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
 }
+

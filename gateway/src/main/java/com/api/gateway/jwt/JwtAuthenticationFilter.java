@@ -1,6 +1,5 @@
 package com.api.gateway.jwt;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -13,7 +12,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Component
-@Slf4j
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Autowired
@@ -23,58 +21,45 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
 
-        log.info("📥 Filtro JWT activado para path: {}", path);
+        if (exchange.getRequest().getMethod().name().equalsIgnoreCase("OPTIONS")) {
+            exchange.getResponse().setStatusCode(HttpStatus.OK);
+            return exchange.getResponse().setComplete();
+        }
 
-
+        // No validar rutas públicas
         if (path.startsWith("/api/auth/") || path.startsWith("/actuator/")) {
             return chain.filter(exchange);
         }
 
+        // Obtener token
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authHeader == null) {
-            authHeader = exchange.getRequest().getHeaders().getFirst("X-Auth-Token");
-        }
-
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("🚫 Solicitud sin autorización válida para path: {}", path);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
         String token = authHeader.substring(7);
-
         try {
-            if (!jwtUtil.validateToken(token)) {
-                log.warn("⚠️ Token JWT inválido.");
+            if (!jwtUtil.validateToken(token) || jwtUtil.isTokenExpired(token)) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
 
-            if (jwtUtil.isTokenExpired(token)) {
-                log.warn("⚠️ Token JWT expirado.");
-                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                return exchange.getResponse().setComplete();
-            }
-
+            // Extraer claims mínimos necesarios
             String userId = jwtUtil.getUserId(token);
             String username = jwtUtil.getUsername(token);
             String role = jwtUtil.getRole(token);
 
+            // Mutar request y reenviar
             ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                     .header("X-User-Id", userId)
                     .header("X-Username", username)
                     .header("X-Role", role)
-                    .header(HttpHeaders.AUTHORIZATION, authHeader)
                     .build();
 
-            ServerWebExchange mutatedExchange = exchange.mutate()
-                    .request(mutatedRequest)
-                    .build();
-
-            return chain.filter(mutatedExchange);
+            return chain.filter(exchange.mutate().request(mutatedRequest).build());
 
         } catch (Exception e) {
-            log.error("❌ Error al procesar token JWT: {}", e.getMessage(), e);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }

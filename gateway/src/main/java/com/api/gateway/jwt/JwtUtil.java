@@ -46,15 +46,16 @@ public class JwtUtil {
     }
 
     public boolean isTokenExpired(String token) {
-        return getClaims(token).getExpiration().before(new Date());
+        try {
+            return getClaims(token).getExpiration().before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token);
+            getClaims(token);
             return true;
         } catch (Exception e) {
             return false;
