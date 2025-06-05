@@ -17,8 +17,12 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(
+            ServerHttpSecurity http,
+            JwtSecurityContextRepository securityContextRepository // <<---
+    ) {
         return http
+                .securityContextRepository(securityContextRepository)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/api/auth/login", "/actuator/**").permitAll()
@@ -33,6 +37,7 @@ public class SecurityConfig {
                 )
                 .build();
     }
+
 
     @Bean
     public CorsWebFilter corsWebFilter() {
