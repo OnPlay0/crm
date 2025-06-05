@@ -59,7 +59,11 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        source.registerCorsConfiguration("/api/auth/**", config);
+        source.registerCorsConfiguration("/api/**", config); // General para microservicios
+        source.registerCorsConfiguration("/api/auth/**", config); // Login y register
+        source.registerCorsConfiguration("/api/auth/login", config); // POST exacto
+
+
         return new CorsWebFilter(source);
     }
 
