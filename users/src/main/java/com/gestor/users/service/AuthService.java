@@ -44,9 +44,17 @@ public class AuthService {
     }
 
     public AuthResponseDTO authenticate(LoginUserDTO request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        System.out.println("🧪 Intentando autenticar: " + request.getUsername());
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
+        } catch (Exception e) {
+            System.out.println("❌ Falló la autenticación:");
+            e.printStackTrace(); // 🔥 Esto se verá en Cloud Run logs
+            throw e;
+        }
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -57,4 +65,5 @@ public class AuthService {
 
         return new AuthResponseDTO(token, token, user.getRole().getName().name());
     }
+
 }
