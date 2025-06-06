@@ -37,19 +37,20 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String path = exchange.getRequest().getPath().value(); // 🔥 Usa .value() en lugar de toString()
+        String path = exchange.getRequest().getPath().value();
         String method = exchange.getRequest().getMethod().name();
 
-        System.out.println("📥 PATH DETECTADO: " + path); // Esto te dirá si realmente llega /api/api/auth/login
+        System.out.println("📥 PATH DETECTADO: " + path);
 
+        // 🟢 Rutas públicas
         if (method.equalsIgnoreCase("OPTIONS") ||
-                path.equals("/api/auth/login") ||
-                path.equals("/api/auth/signup") ||
-                path.startsWith("/actuator")) {
+                path.matches(".*/auth/login$") ||
+                path.matches(".*/auth/signup$") ||
+                path.contains("/actuator")) {
+
             System.out.println("🔓 Ruta pública detectada: " + path);
             return chain.filter(exchange);
         }
-
 
         // 🔒 Rutas protegidas
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
@@ -79,10 +80,13 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange.mutate().request(mutatedRequest).build());
 
         } catch (Exception e) {
+            System.out.println("❌ Token inválido o error en la autenticación JWT:");
+            e.printStackTrace();
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
     }
+
 
 
     @Override
