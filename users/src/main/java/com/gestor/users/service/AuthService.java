@@ -50,20 +50,26 @@ public class AuthService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
+            System.out.println("✅ Autenticación pasó sin excepción.");
         } catch (Exception e) {
             System.out.println("❌ Falló la autenticación:");
-            e.printStackTrace(); // 🔥 Esto se verá en Cloud Run logs
-            throw e;
+            e.printStackTrace(); // 🔥 Esto es vital para Cloud Run
+            throw e; // Dejalo que suba, pero que lo loguee
         }
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        System.out.println("👤 Usuario encontrado: " + user.getUsername());
+
         String token = jwtUtils.createToken(
                 new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
         );
 
+        System.out.println("🔐 Token generado exitosamente.");
+
         return new AuthResponseDTO(token, token, user.getRole().getName().name());
     }
+
 
 }
