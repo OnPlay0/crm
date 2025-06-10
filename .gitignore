@@ -1,0 +1,15 @@
+# Archivos de entorno y Docker
+.env
+docker-compose.yml
+docker-compose*.yml
+
+# Directorios y archivos generados
+/target/
+/bin/
+/.settings/
+/.idea/
+*.iml
+
+# Logs y temporales
+*.log
+*.tmp
