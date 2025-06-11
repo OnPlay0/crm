@@ -7,6 +7,26 @@ spring:
 
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - http://localhost:3000
+              - https://crm-dashboard00.vercel.app
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            exposedHeaders:
+              - Authorization
+              - X-User-Id
+              - X-Role
+            allowCredentials: true
+
       forwarded:
         headers:
           enabled: true
