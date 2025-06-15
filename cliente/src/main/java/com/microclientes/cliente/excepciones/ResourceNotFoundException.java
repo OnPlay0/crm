@@ -1,8 +1,7 @@
 package com.microclientes.cliente.excepciones;
 
-
 public class ResourceNotFoundException extends RuntimeException {
-    public ResourceNotFoundException(String message) {
-        super(message);
+    public ResourceNotFoundException(String msg) {
+        super(msg);
     }
 }

@@ -1,41 +1,35 @@
 package com.microclientes.cliente.dto;
 
-import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
 import com.microclientes.cliente.model.EstadoCliente;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class ClienteDTO {
-
+    @Schema(description = "ID del cliente", example = "1")
     private Long id;
 
-    //El userId no será aceptado desde el frontend.
-    @JsonIgnore
-    private Long userId;
-
-    @Pattern(regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]+$", message = "El nombre solo puede contener letras")
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(min = 2, max = 50, message = "El nombre debe tener entre 2 y 50 caracteres")
+    @Schema(description = "Nombre del cliente", example = "Ana")
+    @NotBlank @Size(min = 2, max = 50)
     private String nombre;
 
-    @Pattern(regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]+$", message = "El apellido solo puede contener letras")
-    @NotBlank(message = "El apellido no puede estar vacío")
-    @Size(min = 2, max = 50, message = "El apellido debe tener entre 2 y 50 caracteres")
+    @Schema(description = "Apellido del cliente", example = "García")
+    @NotBlank @Size(min = 2, max = 50)
     private String apellido;
 
-    @Email(message = "El correo electrónico debe ser válido")
-    @NotBlank(message = "El correo no puede estar vacío")
+    @Schema(description = "Email del cliente", example = "ana@mail.com")
+    @Email @NotBlank
     private String email;
 
-    @Pattern(regexp = "\\d{10}", message = "El teléfono debe contener 10 dígitos")
+    @Schema(description = "Teléfono (10 dígitos)", example = "1155544433")
+    @Pattern(regexp = "\\d{10}")
     private String telefono;
 
+    @Schema(description = "Dirección", example = "Calle 123")
     private String direccion;
 
-    @NotNull(message = "El estado es obligatorio")
+    @Schema(description = "Estado del cliente", example = "ACTIVO")
+    @NotNull
     private EstadoCliente estado;
-
 }

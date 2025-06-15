@@ -1,25 +1,17 @@
 package com.microclientes.cliente.repository;
 
 import com.microclientes.cliente.model.Cliente;
-import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-    // Aquí puedes agregar consultas personalizadas si las necesitas
-    List<Cliente> findByUserId(Long userId);
-    long countByUserId(Long userId);
-
-
-    @Modifying
-    @Transactional
-    int deleteByUserId(Long userId);
-
-
-
-
+    Page<Cliente> findByUserId(Long userId, Pageable pageable);
+    Optional<Cliente> findByIdAndUserId(Long id, Long userId);
+    int deleteByUserIdAndId(Long userId, Long id);
 }
+

@@ -1,17 +1,13 @@
 package com.microclientes.cliente.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import java.time.LocalDateTime;
 
-
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "clientes")
 public class Cliente {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,5 +25,6 @@ public class Cliente {
     private EstadoCliente estado;
 
     private LocalDateTime fechaRegistro = LocalDateTime.now();
-
 }
+
+

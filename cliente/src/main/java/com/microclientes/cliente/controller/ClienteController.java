@@ -1,102 +1,63 @@
 package com.microclientes.cliente.controller;
 
 import com.microclientes.cliente.dto.ClienteDTO;
-import com.microclientes.cliente.repository.ClienteRepository;
 import com.microclientes.cliente.service.ClienteService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("api/clientes")
+@RequestMapping("/api/clientes")
+@RequiredArgsConstructor
 @Validated
+@Tag(name = "Clientes", description = "API de gestión de clientes")
 public class ClienteController {
+    private final ClienteService service;
 
-    @Autowired
-    private ClienteService clienteService;
-
-    @Autowired
-    private ClienteRepository repository;
-
-    private Long getUserIdFromContext() {
-        String userIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return Long.parseLong(userIdStr);
-    }
-
-
-    // Obtener todos los clientes del usuario
+    @Operation(summary = "Listar clientes con paginación")
     @GetMapping
-    public List<ClienteDTO> getAllClientes() {
-        return clienteService.getAllClientesByUser();
+    public ResponseEntity<Page<ClienteDTO>> list(@ParameterObject Pageable page) {
+        Page<ClienteDTO> result = service.list(page);
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(result.getTotalElements()))
+                .body(result);
     }
 
-    // Obtener un cliente por ID del usuario
+    @Operation(summary = "Obtener cliente por ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ClienteDTO> getClienteById(@PathVariable Long id) {
-        Optional<ClienteDTO> cliente = clienteService.getClienteByIdForUser(id);
-        return cliente.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ClienteDTO get(@PathVariable Long id) {
+        return service.get(id);
     }
 
-
-    // Crear un nuevo cliente
+    @Operation(summary = "Crear cliente")
     @PostMapping
-    public ResponseEntity<ClienteDTO> createCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
-        ClienteDTO nuevoCliente = clienteService.createCliente(clienteDTO);
-        return new ResponseEntity<>(nuevoCliente, HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public ClienteDTO create(@Valid @RequestBody ClienteDTO dto) {
+        return service.create(dto);
     }
 
-    // Actualizar un cliente existente
+    @Operation(summary = "Actualizar cliente")
     @PutMapping("/{id}")
-    public ResponseEntity<ClienteDTO> updateCliente(@PathVariable Long id, @Valid @RequestBody ClienteDTO clienteDTO) {
-        try {
-            ClienteDTO actualizado = clienteService.updateCliente(id, clienteDTO);
-            return ResponseEntity.ok(actualizado);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<ClienteDTO> update(@PathVariable Long id,
+                                             @Valid @RequestBody ClienteDTO dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
-    // Eliminar un cliente
+    @Operation(summary = "Eliminar cliente")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCliente(@PathVariable Long id) {
-        clienteService.deleteCliente(id);
-        return ResponseEntity.noContent().build();
-    }
-
-
-    @GetMapping("/count")
-    public ResponseEntity<Long> contarClientesPorUsuario() {
-        Long userId = getUserIdFromContext();
-        long total = repository.countByUserId(userId);
-        return ResponseEntity.ok(total);
-    }
-
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
-        try {
-            Long userId = getUserIdFromContext(); // recuperamos el userId multitenant
-            clienteService.importarClientesDesdeArchivo(file, userId);
-            return ResponseEntity.ok("Clientes importados exitosamente.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar archivo: " + e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/cleanup")
-    public ResponseEntity<Void> borrarClientesInvitado(@RequestHeader("X-User-Id") Long userId) {
-        clienteService.borrarClientesDelInvitado(userId);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }
