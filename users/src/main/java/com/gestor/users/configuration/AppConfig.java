@@ -24,9 +24,6 @@ import java.time.LocalDateTime;
 @EnableScheduling
 public class AppConfig {
 
-
-
-
     @Bean
     public ModelMapper modelMapper() {
         ModelMapper mapper = new ModelMapper();
@@ -80,20 +77,6 @@ public class AppConfig {
                         .build();
                 userRepository.save(admin);
                 System.out.println("✅ Usuario admin creado");
-            }
-
-            // Invitado
-            if (userRepository.findByUsername("invitado").isEmpty()) {
-                Role invitedRole = roleRepository.findByName(RoleList.ROLE_INVITED).orElseThrow();
-                User invitado = User.builder()
-                        .username("invitado")
-                        .email("invitado@crm.com")
-                        .password(passwordEncoder.encode("123"))
-                        .role(invitedRole)
-                        .createdAt(LocalDateTime.now())
-                        .build();
-                userRepository.save(invitado);
-                System.out.println("✅ Usuario invitado creado");
             }
         };
     }

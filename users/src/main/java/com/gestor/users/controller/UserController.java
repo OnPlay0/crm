@@ -137,15 +137,4 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
-
-    @DeleteMapping("/cleanup")
-    public ResponseEntity<Void> borrarDatosDelInvitado(@RequestHeader("X-User-Id") Long userId) {
-        userRepository.findById(userId).ifPresent(user -> {
-            userRepository.deleteById(userId);
-        });
-        return ResponseEntity.noContent().build();
-    }
-
-
-
 }

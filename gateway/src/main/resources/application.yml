@@ -7,76 +7,60 @@ spring:
 
   cloud:
     gateway:
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins:
-              - http://localhost:3000
-              - https://crm-dashboard00.vercel.app
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders:
-              - "*"
-            exposedHeaders:
-              - Authorization
-              - X-User-Id
-              - X-Role
-            allowCredentials: true
-
-      forwarded:
-        headers:
-          enabled: true
-
+      # Evita headers CORS duplicados
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
 
+      # Rutas a microservicios (por nombre de servicio en la red Docker)
       routes:
         - id: auth-route
-          uri: https://users-services-976321280197.us-central1.run.app
+          uri: http://servicio-users:8081
           predicates:
             - Path=/api/auth/**
 
         - id: users-route
-          uri: https://users-services-976321280197.us-central1.run.app
+          uri: http://servicio-users:8081
           predicates:
             - Path=/api/users/**
 
         - id: microservicio-clientes
-          uri: https://cliente-services-976321280197.us-central1.run.app
+          uri: http://servicio-clientes:8085
           predicates:
             - Path=/api/clientes/**
 
-        - id: microservicio-leads
-          uri: https://leads-services-976321280197.us-central1.run.app
-          predicates:
-            - Path=/api/leads/**
-
         - id: microservicio-ventas
-          uri: https://ventas-services-976321280197.us-central1.run.app
+          uri: http://servicio-ventas:8082
           predicates:
-            - Path=/api/oportunidades/**
+            - Path=/api/sales/**
 
-        - id: microservicio-servicios
-          uri: https://microservicios-services-976321280197.us-central1.run.app
+        - id: microservicio-catalog
+          uri: http://servicio-servicios:8083
           predicates:
-            - Path=/api/servicios/**
+              - Path=/api/catalog/**
+          filters:
+            - StripPrefix=0
 
-jwt:
-  secret: ${JWT_SECRET}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-
-logging:
-  level:
-    root: INFO
-    org.springframework.cloud.gateway: DEBUG
-    reactor.netty.http.client: DEBUG
-    com.api.gateway.jwt.JwtAuthenticationFilter: DEBUG
+  # CORS para el front
+  web:
+    cors:
+      allowed-origins:
+        - "http://localhost:3000"
+        - "https://*.vercel.app"
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      allowed-headers:
+        - Authorization
+        - Content-Type
+        - X-Requested-With
+      exposed-headers:
+        - Location
+        - ETag
+        - Link
+        - X-Total-Count
+      allow-credentials: true
+      max-age: 3600

@@ -1,0 +1,7 @@
+DB_URL jdbc:mysql://35.202.233.222:3306/gestorusuarios
+
+DB_USER root
+
+DB_PASSWORD Jonisql112233
+
+eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=

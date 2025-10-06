@@ -21,14 +21,8 @@ public class AuthController {
     private final JwtUtils jwtUtils; // 👈 CAMBIO: ahora inyectamos JwtUtils (no JwtService)
 
     @PostMapping("/signup")
-    public ResponseEntity<?> register(@RequestHeader HttpHeaders headers,
-                                      @RequestBody RegisterUserDTO request) {
-        String role = headers.getFirst("X-Role");
-
-        if (!RoleList.ROLE_ADMIN.name().equals(role)) {
-            return ResponseEntity.status(403).body("Solo el administrador puede registrar nuevos usuarios.");
-        }
-
+    public ResponseEntity<?> register(@RequestBody RegisterUserDTO request) {
+        request.setRole(RoleList.ROLE_USER);
         User registeredUser = authService.signup(request);
         return ResponseEntity.ok(registeredUser);
     }

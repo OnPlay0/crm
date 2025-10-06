@@ -1,0 +1,460 @@
+package com.microclientes.cliente.dto;
+
+import com.microclientes.cliente.model.EstadoCliente;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
+import lombok.Data;
+
+@Data
+public class ClienteDTO {
+    @Schema(description = "ID del cliente", example = "1")
+    private Long id;
+
+    @Schema(description = "Nombre del cliente", example = "Ana")
+    @NotBlank @Size(min = 2, max = 50)
+    private String nombre;
+
+    @Schema(description = "Apellido del cliente", example = "García")
+    @NotBlank @Size(min = 2, max = 50)
+    private String apellido;
+
+    @Schema(description = "Email del cliente", example = "ana@mail.com")
+    @Email @NotBlank
+    private String email;
+
+    @Schema(description = "Teléfono (10 dígitos)", example = "1155544433")
+    @Pattern(regexp = "\\d{10}")
+    private String telefono;
+
+    @Schema(description = "Dirección", example = "Calle 123")
+    private String direccion;
+
+    @Schema(description = "Estado del cliente", example = "ACTIVO")
+    @NotNull
+    private EstadoCliente estado;
+}
+package com.microclientes.cliente.config;
+
+import org.mapstruct.MapperConfig;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+
+@MapperConfig(
+        componentModel = "spring",                                // genera beans Spring
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,            // ignora campos sin mapping
+        nullValuePropertyMappingStrategy =                         // no sobreescribe propiedades con null
+                NullValuePropertyMappingStrategy.IGNORE
+)
+public interface MapStructConfig {
+}
+package com.microclientes.cliente.config;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OpenApiConfig {
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Servicio Clientes")
+                        .version("v1")
+                        .description("API para gestión de clientes multitenant"));
+    }
+}
+package com.microclientes.cliente.controller;
+
+import com.microclientes.cliente.dto.ClienteDTO;
+import com.microclientes.cliente.service.ClienteService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/clientes")
+@RequiredArgsConstructor
+@Validated
+@Tag(name = "Clientes", description = "API de gestión de clientes")
+public class ClienteController {
+    private final ClienteService service;
+
+    @Operation(summary = "Listar clientes con paginación")
+    @GetMapping
+    public ResponseEntity<Page<ClienteDTO>> list(@ParameterObject Pageable page) {
+        Page<ClienteDTO> result = service.list(page);
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(result.getTotalElements()))
+                .body(result);
+    }
+
+    @Operation(summary = "Obtener cliente por ID")
+    @GetMapping("/{id}")
+    public ClienteDTO get(@PathVariable Long id) {
+        return service.get(id);
+    }
+
+    @Operation(summary = "Crear cliente")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ClienteDTO create(@Valid @RequestBody ClienteDTO dto) {
+        log.debug("dto recibido en create (): {}", dto);
+        return service.create(dto);
+    }
+
+    @Operation(summary = "Actualizar cliente")
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<ClienteDTO> update(@PathVariable Long id,
+                                             @Valid @RequestBody ClienteDTO dto) {
+        return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @Operation(summary = "Eliminar cliente")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
+}
+package com.microclientes.cliente.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    record ApiError(Instant timestamp, String code, String message) {}
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleNotFound(ResourceNotFoundException ex) {
+        return new ApiError(Instant.now(), "NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleValidation(MethodArgumentNotValidException ex) {
+        String details = ex.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+        return new ApiError(Instant.now(), "VALIDATION_ERROR", details);
+    }
+}
+package com.microclientes.cliente.exception;
+
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String msg) {
+        super(msg);
+    }
+}package com.microclientes.cliente.mapper;
+
+import com.microclientes.cliente.dto.ClienteDTO;
+import com.microclientes.cliente.model.Cliente;
+import org.mapstruct.*;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface ClienteMapper {
+    ClienteDTO toDto(Cliente entity);
+    Cliente toEntity(ClienteDTO dto);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto(ClienteDTO dto, @MappingTarget Cliente entity);
+}package com.microclientes.cliente.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+@Data
+@Entity
+@Table(name = "clientes")
+public class Cliente {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    private String nombre;
+    private String apellido;
+    private String email;
+    private String telefono;
+    private String direccion;
+
+    @Enumerated(EnumType.STRING)
+    private EstadoCliente estado;
+
+    private LocalDateTime fechaRegistro = LocalDateTime.now();
+}
+
+
+package com.microclientes.cliente.model;
+
+public enum EstadoCliente {
+    PROSPECTO, ACTIVO, INACTIVO, CERRADO
+}
+
+
+package com.microclientes.cliente.repository;
+
+import com.microclientes.cliente.model.Cliente;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface ClienteRepository extends JpaRepository<Cliente, Long> {
+    Page<Cliente> findByUserId(Long userId, Pageable pageable);
+    Optional<Cliente> findByIdAndUserId(Long id, Long userId);
+    int deleteByUserIdAndId(Long userId, Long id);
+}
+
+package com.microclientes.cliente.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.Collections;
+
+@Component
+@Slf4j
+public class JwtHeaderAuthFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String userId = request.getHeader("X-User-Id");
+        String role   = request.getHeader("X-Role");
+
+        if (userId != null && role != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            log.debug("Autenticando userId={} con rol={}", userId, role);
+            var auth = new UsernamePasswordAuthenticationToken(
+                    userId, null,
+                    Collections.singletonList(new SimpleGrantedAuthority(role)));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+        filterChain.doFilter(request, response);
+    }
+}package com.microclientes.cliente.security;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.util.Base64;
+import java.util.Date;
+
+@Component
+public class JwtUtils {
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init() {
+        byte[] decodedSecret = Base64.getDecoder().decode(secret);
+        this.secretKey = Keys.hmacShaKeyFor(decodedSecret);
+    }
+
+    public Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public String getUserId(String token) {
+        return String.valueOf(getClaims(token).get("userId"));
+    }
+
+    public String getRole(String token) {
+        return String.valueOf(getClaims(token).get("role"));
+    }
+
+    public boolean isTokenExpired(String token) {
+        return getClaims(token).getExpiration().before(new Date());
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
+package com.microclientes.cliente.security;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtHeaderAuthFilter jwtHeaderAuthFilter;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(cs -> cs.disable())
+                .authorizeHttpRequests(auth -> auth
+                        // rutas públicas
+                        .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        // todos los roles pueden acceder a /api/clientes/**
+                        .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "USER", "INVITED")
+                        // el resto requiere autenticación
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtHeaderAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
+    }
+
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+        hierarchy.setHierarchy("ROLE_ADMIN > ROLE_USER");
+        return hierarchy;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+}package com.microclientes.cliente.service;
+
+import com.microclientes.cliente.dto.ClienteDTO;
+import com.microclientes.cliente.exception.ResourceNotFoundException;
+import com.microclientes.cliente.mapper.ClienteMapper;
+import com.microclientes.cliente.model.Cliente;
+import com.microclientes.cliente.repository.ClienteRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ClienteService {
+    private final ClienteRepository repo;
+    private final ClienteMapper mapper;
+
+    private Long currentUserId() {
+        return Long.parseLong(SecurityContextHolder.getContext()
+                .getAuthentication().getName());
+    }
+
+    public Page<ClienteDTO> list(Pageable page) {
+        Long uid = currentUserId();
+        log.info("Listando clientes página {} para usuario {}", page.getPageNumber(), uid);
+        return repo.findByUserId(uid, page)
+                .map(mapper::toDto);
+    }
+
+    public ClienteDTO get(Long id) {
+        return repo.findByIdAndUserId(id, currentUserId())
+                .map(mapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + id));
+    }
+
+    @Transactional
+    public ClienteDTO create(ClienteDTO dto) {
+        Cliente c = mapper.toEntity(dto);
+        c.setUserId(currentUserId());
+        return mapper.toDto(repo.save(c));
+    }
+
+    @Transactional
+    public ClienteDTO update(Long id, ClienteDTO dto) {
+        Cliente existing = repo.findByIdAndUserId(id, currentUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + id));
+        mapper.updateEntityFromDto(dto, existing);
+        return mapper.toDto(repo.save(existing));
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (repo.deleteByUserIdAndId(currentUserId(), id) == 0) {
+            throw new ResourceNotFoundException("Cliente no encontrado: " + id);
+        }
+    }
+}
+# Conexión a MySQL corriendo en Docker (contenedor mysql-local, BD clientesdb)
+spring.datasource.url=jdbc:mysql://localhost:3306/gestorusuarios
+spring.datasource.username=root
+spring.datasource.password=Jonisql112233
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA / Hibernate
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.show-sql=true
+
+# JWT Secret generado (Base64 256-bit)
+jwt.secret=eeGEQ3snVxhhzn5N8YJY9BfJh9b1V1pZBfNdNgslYX4=
+
+# Puerto en el que expone el microservicio (mismo que en Dockerfile)
+server.port=8081
+
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE

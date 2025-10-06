@@ -42,12 +42,12 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("El usuario debe tener un rol asignado.");
         }
 
-        // Buscar y asignar rol
+
         Role roleEntity = roleRepository.findByName(user.getRole().getName())
                 .orElseThrow(() -> new RuntimeException("El rol " + user.getRole().getName() + " no existe"));
         user.setRole(roleEntity);
 
-        // Encriptar la contraseña
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
 

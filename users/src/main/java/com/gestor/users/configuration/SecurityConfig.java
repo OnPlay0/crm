@@ -44,7 +44,11 @@ public class SecurityConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://crm-dashboard00.vercel.app"));
+        config.setAllowedOrigins(List.of(
+                "https://crm-dashboard00.vercel.app",
+                "http://localhost:3000",
+                "http://127.0.0.1:3000"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "X-User-Id", "X-Role"));
